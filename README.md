@@ -551,3 +551,13 @@ function AdminDashboard() {
               !hasMore
                 ? "bg-gray-200 dark:bg-gray-600 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={chatInput.trim() === ""}
+            >
+              Send
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
