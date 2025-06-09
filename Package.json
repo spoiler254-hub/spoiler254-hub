@@ -1,0 +1,41 @@
+{
+  "name": "your-app-name",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "firebase": "^9.x.x",        // Latest compatible version
+    "react": "^18.x.x",
+    "react-dom": "^18.x.x",
+    "react-router-dom": "^6.x.x",
+    "react-csv": "^2.x.x",
+    "moment": "^2.x.x",
+    "lodash": "^4.x.x",            // For debounce
+    "react-toastify": "^9.x.x",
+    "tailwindcss": "^3.x.x"     // If you are using Tailwind CSS
+    // ... other dependencies
+  },
+  "scripts": {
+    "start": "react-scripts start", // Or vite, etc.
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
