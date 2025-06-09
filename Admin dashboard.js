@@ -460,54 +460,53 @@ function AdminDashboard() {
           </p>
         ) : (
           <div className="space-y-4">
-            {moments.map((moment) => (
+            {moments.map((m) => (
               <div
-                key={moment.id}
+                key={m.id}
                 className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
               >
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
                   <div className="flex-1">
                     <p className="text-gray-800 dark:text-gray-200 font-semibold">
-                      {moment.caption || "No caption"}
+                      {m.caption || "No caption"}
                     </p>
                     <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       <p>
                         Posted by:{" "}
-                        {users.find((u) => u.id === moment.userId)?.email ||
-                          "Unknown"}{" "}
+                        {users.find((u) => u.id === m.userId)?.email || "Unknown"}{" "}
                         |
-                        {moment.timestamp && (
-                          <> {moment(moment.timestamp).format("MMM D,YYYY h:mm A")}</>
+                        {m.timestamp && (
+                          <> {moment(m.timestamp).format("MMM D,YYYY h:mm A")}</>
                         )}
                       </p>
                       <p className="mt-1">
-                        Likes: {moment.likes?.length || 0} | Comments:{" "}
-                        {moment.comments?.length || 0}
+                        Likes: {m.likes?.length || 0} | Comments:{" "}
+                        {m.comments?.length || 0}
                       </p>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => navigate(`/moment/${moment.id}`)}
+                      onClick={() => navigate(`/moment/${m.id}`)}
                       className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm"
-                      aria-label={`View moment ${moment.caption || moment.id}`}
+                      aria-label={`View moment ${m.caption || m.id}`}
                     >
                       View
                     </button>
                     <button
-                      onClick={() => handleDeleteMoment(moment.id)}
+                      onClick={() => handleDeleteMoment(m.id)}
                       className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isDeleting === moment.id}
-                      aria-label={`Delete moment ${moment.caption || moment.id}`}
+                      disabled={isDeleting === m.id}
+                      aria-label={`Delete moment ${m.caption || m.id}`}
                     >
-                      {isDeleting === moment.id ? "Deleting..." : "Delete"}
+                      {isDeleting === m.id ? "Deleting..." : "Delete"}
                     </button>
                   </div>
                 </div>
-                {moment.imageUrl && (
+                {m.imageUrl && (
                   <div className="mt-3">
                     <img
-                      src={moment.imageUrl}
+                      src={m.imageUrl}
                       alt="Moment"
                       className="max-h-60 rounded object-cover"
                     />
@@ -537,4 +536,112 @@ function AdminDashboard() {
           </span>
           <button
             onClick={() => setCurrentPage((p) => p + 1)}
-            disabled
+            disabled={!hasMore}
+            className={`py-2 px-4 rounded ${
+              !hasMore
+                ? "bg-gray-200 dark:bg-gray-600 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+            aria-label="Next page"
+          >
+            {loading ? "Loading..." : "Next"}
+          </button>
+        </div>
+      </div>
+
+      {/* Chat Modal (if needed) */}
+      {chatOpen && chatTarget && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                Chat with {chatTarget.displayName || chatTarget.email}
+              </h3>
+              <button
+                onClick={() => setChatOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Close chat"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="max-h-60 overflow-y-auto mb-4">
+              {chatMessages.length === 0 ? (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                  No messages yet. Start the conversation!
+                </p>
+              ) : (
+                chatMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex gap-2 mb-2 ${
+                      msg.senderId === auth.currentUser.uid
+                        ? "justify-end"
+                        : "justify-start"
+                    }`}
+                  >
+                    {msg.senderId !== auth.currentUser.uid && (
+                      <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-xs font-semibold">
+                        {chatTarget.displayName?.charAt(0) || "U"}
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                        msg.senderId === auth.currentUser.uid
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-900"
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                    {msg.senderId === auth.currentUser.uid && (
+                      <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 12h8m-4-4v8"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+            <form
+              onSubmit={handleSendChat}
+              className="flex gap-2"
+            >
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Chat message input"
+              />
+              <button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+                disabled={chatInput.trim() === ""}
+                aria-label="Send message"
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AdminDashboard;
