@@ -1,0 +1,39 @@
+// firestore.rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // General rule for authenticated users to read profiles
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      // Example: allow admin to write user profiles
+      // allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Rules for moments collection
+    match /moments/{momentId} {
+      allow read: if request.auth != null; // Authenticated users can read moments
+      // Only admins can delete moments (assuming custom claim 'admin: true')
+      allow delete: if request.auth != null && request.auth.token.admin == true;
+      // Alternative if isAdmin is a field in the user document:
+      // allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // --- Chat-specific rules ---
+    // A user can read/write to a chat if their UID is in the 'members' array of the chat document.
+    match /chats/{chatId} {
+      allow read, write: if request.auth != null && request.auth.uid in resource.data.members;
+
+      // Messages subcollection: A user can read/write messages
+      // if they are a member of the parent chat.
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.members;
+
+        // Optional: More granular rules for messages, e.g., only sender can create:
+        // allow create: if request.auth != null && request.resource.data.senderId == request.auth.uid;
+        // allow update, delete: if false; // Makes messages immutable
+      }
+    }
+  }
+}
