@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-sm">
+        <h2 class="text-2xl font-bold mb-6 text-center">Admin Login (Simulated)</h2>
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="mb-4">
+                <label for="uid" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Simulated Admin UID:</label>
+                <input type="text" id="uid" name="uid" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                <p class="text-xs text-gray-500 mt-1">Use 'admin_user_uid_1' or 'admin_user_uid_2' (from `ADMIN_UIDS` in `app.py`)</p>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Login
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
