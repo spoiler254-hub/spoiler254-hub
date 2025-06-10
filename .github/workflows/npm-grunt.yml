@@ -1,4 +1,4 @@
-name: NodeJS with Grunt
+name: NodeJS with Grunt CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     strategy:
@@ -21,8 +21,13 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'  # Enable caching for faster installs
 
-    - name: Build
-      run: |
-        npm install
-        grunt
+    - name: Install dependencies
+      run: npm ci  # Uses package-lock.json for reproducible builds
+
+    - name: Run Grunt build
+      run: grunt build  # Assuming you have a 'build' task in Gruntfile
+
+    - name: Run Grunt tests (if you have tests)
+      run: grunt test  # Add this if you have test tasks in Grunt
