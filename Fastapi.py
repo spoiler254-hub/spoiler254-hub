@@ -1,35 +1,29 @@
-# main.py
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = Flask(__name__)
+CORS(app)
 
 # Initialize Firebase
 cred = credentials.Certificate("path/to/serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-@app.get("/api/moments")
-async def get_moments():
+@app.route('/api/moments', methods=['GET'])
+def get_moments():
     try:
         docs = db.collection('moments').stream()
-        return [doc.to_dict() for doc in docs]
+        return jsonify([doc.to_dict() for doc in docs])
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return jsonify({'error': str(e)}), 500
 
-@app.post("/api/delete-moment")
-async def delete_moment(moment_id: str):
+@app.route('/api/delete-moment', methods=['POST'])
+def delete_moment():
+    moment_id = request.json.get('moment_id')
     try:
         db.collection('moments').document(moment_id).delete()
-        return {"success": True}
+        return jsonify({'success': True})
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return jsonify({'error': str(e)}), 500
