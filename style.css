@@ -1,0 +1,8 @@
+/* static/css/style.css */
+
+/* Add any custom styles not covered by Tailwind here */
+
+/* Basic body styling for dark mode transition, if not done by Tailwind directly */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
