@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <!-- Inter Font from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Paste the entire CSS from the previous answer here */
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      /* ... rest of the CSS variables ... */
+    }
+    /* ... rest of the CSS rules ... */
+  </style>
+</head>
+<body class="bg-primary text-primary">
+  <div id="root" class="min-h-screen">
+    <!-- This will be replaced by your React content -->
+    <div class="p-6 max-w-7xl mx-auto">
+      <!-- Loading Skeleton (shown before React hydrates) -->
+      <div class="flex flex-col gap-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 animate-pulse">
+          <div class="h-8 w-48 bg-gray-700 rounded"></div>
+          <div class="h-10 w-32 bg-gray-700 rounded"></div>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div class="bg-gray-800 p-4 rounded-lg h-64"></div>
+          <div class="bg-gray-800 p-4 rounded-lg h-64"></div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="bg-gray-800 p-4 rounded-lg h-96"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- React Scripts (from create-react-app) -->
+  <script>
+    // This script ensures the loading skeleton disappears when React loads
+    document.addEventListener('DOMContentLoaded', function() {
+      const root = document.getElementById('root');
+      root.innerHTML = ''; // Clear loading skeleton when React takes over
+    });
+  </script>
+</body>
+</html>
