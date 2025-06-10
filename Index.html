@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard App</title>
+    
+    <link rel="stylesheet" href="/css/main.css"> 
+
+</head>
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    
+    <div id="root">
+        </div>
+    
+    <script>
+      const firebaseConfig = {
+        apiKey: "YOUR_FIREBASE_API_KEY",
+        authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+        projectId: "YOUR_FIREBASE_PROJECT_ID",
+        storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
+        appId: "YOUR_FIREBASE_APP_ID",
+        measurementId: "YOUR_FIREBASE_MEASUREMENT_ID"
+      };
+
+      // This part is for initializing Firebase *if* you were to initialize it here.
+      // However, your `src/firebase.js` file already handles this.
+      // So, this `firebaseConfig` object would typically be consumed by `src/firebase.js`
+      // through environment variables.
+      // If you uncommented and used this, you'd need to ensure `firebase` global is available
+      // or pass this config to `src/firebase.js`.
+      // For a standard React setup, rely on src/firebase.js and .env variables.
+    </script>
+
+    <script type="module" src="/src/index.jsx"></script> 
+
+</body>
+</html>
