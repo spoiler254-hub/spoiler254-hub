@@ -1,0 +1,287 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">Admin Dashboard</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <h3 class="text-xl font-semibold mb-4">User Accounts ({{ users|length }})</h3>
+        <div class="overflow-x-auto">
+            {% if not users %}
+                <p class="text-gray-500 dark:text-gray-400 py-4 text-center">No user accounts found.</p>
+            {% else %}
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <th class="text-left py-2 px-2">Name</th>
+                            <th class="text-left py-2 px-2">Email</th>
+                            <th class="text-left py-2 px-2">Joined</th>
+                            <th class="text-left py-2 px-2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <td class="py-2 px-2">{{ user.displayName or 'Unnamed User' }}</td>
+                                <td class="py-2 px-2">{{ user.email }}</td>
+                                <td class="py-2 px-2">
+                                    {% if user.metadata and user.metadata.creationTime %}
+                                        {{ user.metadata.creationTime.strftime("%b %d,%Y") if user.metadata.creationTime is datetime else user.metadata.creationTime }}
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                </td>
+                                <td class="py-2 px-2 flex gap-2 items-center">
+                                    {% if user.id in ADMIN_UIDS %}
+                                        <span class="text-gray-500 dark:text-gray-400 text-xs py-1 px-2 rounded">Admin</span>
+                                    {% else %}
+                                        <form action="{{ url_for('ban_user', user_id=user.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to ban {{ user.displayName or user.email }}?');">
+                                            <input type="hidden" name="admin_uid" value="{{ current_admin_uid }}">
+                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white py-1 px-2 rounded text-xs">Ban</button>
+                                        </form>
+                                        <button onclick="openChatModal('{{ user.id }}', '{{ user.displayName or user.email }}')"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded text-xs ml-2"
+                                                {% if user.id == current_admin_uid %} disabled {% endif %} >
+                                            Chat
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        <h3 class="text-xl font-semibold mb-4">Statistics</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                <p class="text-gray-600 dark:text-gray-400 text-sm">Total Users</p>
+                <p class="text-xl font-bold">{{ users|length }}</p>
+            </div>
+            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                <p class="text-gray-600 dark:text-gray-400 text-sm">Total Moments</p>
+                <p class="text-xl font-bold">{{ total_moments_count }}</p>
+            </div>
+            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                <p class="text-gray-600 dark:text-gray-400 text-sm">Active Today</p>
+                <p class="text-xl font-bold">N/A (Complex for SSR)</p>
+            </div>
+            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                <p class="text-gray-600 dark:text-gray-400 text-sm">New This Week</p>
+                <p class="text-xl font-bold">N/A (Complex for SSR)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <h3 class="text-xl font-semibold">User Moments</h3>
+        <form method="GET" action="{{ url_for('admin_dashboard') }}" class="w-full md:w-auto">
+            <input type="hidden" name="user_id" value="{{ current_admin_uid }}">
+            <input
+                type="text"
+                name="search_term"
+                placeholder="Search moments by caption..."
+                class="w-full md:w-64 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Search moments"
+                value="{{ request.args.get('search_term', '') }}"
+                onchange="this.form.submit()"
+            />
+        </form>
+    </div>
+
+    {% if not moments %}
+        <p class="text-gray-500 dark:text-gray-400 py-4 text-center">No moments found.</p>
+    {% else %}
+        <div class="space-y-4">
+            {% for moment in moments %}
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                        <div class="flex-1">
+                            <p class="text-gray-800 dark:text-gray-200 font-semibold">
+                                {{ moment.caption or 'No caption' }}
+                            </p>
+                            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                <p>
+                                    Posted by:
+                                    {% for user in users %}
+                                        {% if user.id == moment.userId %}
+                                            {{ user.email }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    |
+                                    {{ moment.timestamp_formatted }}
+                                </p>
+                                <p class="mt-1">
+                                    Likes: {{ moment.likes|length if moment.likes else 0 }} | Comments: {{ moment.comments|length if moment.comments else 0 }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="/moment/{{ moment.id }}" class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm">
+                                View
+                            </a>
+                            <form action="{{ url_for('delete_moment', moment_id=moment.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this moment?');">
+                                <input type="hidden" name="admin_uid" value="{{ current_admin_uid }}">
+                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded text-sm">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% if moment.imageUrl %}
+                        <div class="mt-3">
+                            <img src="{{ moment.imageUrl }}" alt="Moment" class="max-h-60 rounded object-cover" />
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="flex justify-between items-center mt-6">
+        <a href="{{ url_for('admin_dashboard', page=current_page - 1, user_id=current_admin_uid, search_term=request.args.get('search_term', '')) }}"
+           class="py-2 px-4 rounded {% if current_page == 1 %}bg-gray-200 dark:bg-gray-600 cursor-not-allowed{% else %}bg-blue-600 hover:bg-blue-700 text-white{% endif %}"
+           aria-label="Previous page">
+            Previous
+        </a>
+        <span class="text-gray-700 dark:text-gray-300">
+            Page {{ current_page }}
+        </span>
+        <a href="{{ url_for('admin_dashboard', page=current_page + 1, user_id=current_admin_uid, search_term=request.args.get('search_term', '')) }}"
+           class="py-2 px-4 rounded {% if not has_more %}bg-gray-200 dark:bg-gray-600 cursor-not-allowed{% else %}bg-blue-600 hover:bg-blue-700 text-white{% endif %}"
+           aria-label="Next page">
+            Next
+        </a>
+    </div>
+</div>
+
+<div id="chatModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-96 flex flex-col h-96">
+        <div class="flex justify-between items-center border-b p-4 dark:border-gray-700">
+            <h3 class="text-lg font-semibold" id="chatModalTitle">Chat with User</h3>
+            <button onclick="closeChatModal()" class="text-gray-400 hover:text-red-500 text-xl font-bold">&times;</button>
+        </div>
+        <div id="chatMessages" class="flex-1 p-4 overflow-y-auto">
+            <p class="text-gray-500 text-center">Loading messages...</p>
+        </div>
+        <form onsubmit="sendChatMessage(event)" class="flex p-4 border-t dark:border-gray-700">
+            <input type="text" id="chatInput" class="flex-1 border rounded px-3 py-2 mr-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Type a message">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Send</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let currentChatId = null;
+    let currentChatTargetId = null;
+    let currentChatTargetName = null;
+    const currentAdminUid = "{{ current_admin_uid }}"; // Passed from Flask
+
+    async function openChatModal(userId, userName) {
+        currentChatTargetId = userId;
+        currentChatTargetName = userName;
+        document.getElementById('chatModalTitle').innerText = `Chat with ${userName}`;
+        document.getElementById('chatModal').classList.remove('hidden');
+        document.getElementById('chatMessages').innerHTML = '<p class="text-gray-500 text-center">Loading messages...</p>'; // Reset messages
+
+        try {
+            const response = await fetch(`/get_chat/${userId}?admin_uid=${currentAdminUid}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                currentChatId = data.chatId;
+                renderChatMessages(data.messages, data.adminUid);
+            } else {
+                document.getElementById('chatMessages').innerHTML = `<p class="text-red-500 text-center">Error: ${data.error}</p>`;
+                console.error('Error opening chat:', data.error);
+            }
+        } catch (error) {
+            document.getElementById('chatMessages').innerHTML = `<p class="text-red-500 text-center">Network Error: Could not load chat.</p>`;
+            console.error('Network error fetching chat:', error);
+        }
+    }
+
+    function renderChatMessages(messages, adminUid) {
+        const chatMessagesDiv = document.getElementById('chatMessages');
+        chatMessagesDiv.innerHTML = ''; // Clear previous messages
+        if (messages.length === 0) {
+            chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No messages yet.</p>';
+        } else {
+            messages.forEach(msg => {
+                const isSentByAdmin = msg.senderId === adminUid;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `my-2 flex ${isSentByAdmin ? "justify-end" : "justify-start"}`;
+
+                const bubbleSpan = document.createElement('span');
+                bubbleSpan.className = `inline-block px-3 py-2 rounded-lg max-w-[80%] ${isSentByAdmin ? "bg-blue-500 text-white rounded-br-none" : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-bl-none"}`;
+
+                const senderNameP = document.createElement('p');
+                senderNameP.className = 'text-xs font-semibold mb-1';
+                senderNameP.innerText = isSentByAdmin ? "You" : currentChatTargetName;
+
+                const textP = document.createElement('p');
+                textP.innerText = msg.text;
+
+                const timeP = document.createElement('p');
+                timeP.className = 'text-right text-xs mt-1 opacity-75';
+                timeP.innerText = msg.createdAt; // Already formatted by Python
+
+                bubbleSpan.appendChild(senderNameP);
+                bubbleSpan.appendChild(textP);
+                bubbleSpan.appendChild(timeP);
+                messageDiv.appendChild(bubbleSpan);
+                chatMessagesDiv.appendChild(messageDiv);
+            });
+        }
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Auto-scroll to bottom
+    }
+
+    async function sendChatMessage(event) {
+        event.preventDefault();
+        const chatInput = document.getElementById('chatInput');
+        const messageText = chatInput.value.trim();
+
+        if (messageText === "" || !currentChatId || !currentAdminUid) return;
+
+        try {
+            const response = await fetch(`/send_message/${currentChatId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: messageText,
+                    adminUid: currentAdminUid,
+                    adminEmail: "{{ request.args.get('admin_email', 'admin@example.com') }}" // Placeholder or pass actual admin email from backend
+                }),
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                chatInput.value = ''; // Clear input
+                // For a truly reactive chat, you'd re-fetch messages or add the new message directly.
+                // In this basic example, we'll just clear the input and assume the next refresh will show it.
+                // For true real-time, you'd need WebSockets on both client and server.
+                openChatModal(currentChatTargetId, currentChatTargetName); // Re-fetch all messages to update
+            } else {
+                alert(`Failed to send message: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Network error: Could not send message.');
+        }
+    }
+
+    function closeChatModal() {
+        document.getElementById('chatModal').classList.add('hidden');
+        currentChatId = null;
+        currentChatTargetId = null;
+        currentChatTargetName = null;
+    }
+</script>
+
+{% endblock %}
+  
