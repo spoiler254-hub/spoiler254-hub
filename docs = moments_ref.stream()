@@ -1,0 +1,6 @@
+docs = moments_ref.stream()
+...
+total = len(moments)
+start = (page - 1) * per_page
+end = start + per_page
+paged = moments[start:end]
