@@ -1,0 +1,57 @@
+name: React → Grunt → Firebase Deploy
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  FIREBASE_PROJECT: your-project-id  # Set your Firebase project ID
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      
+      - run: npm ci
+      - run: npm test
+        env:
+          CI: true
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Only deploy on main branch
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build React + Grunt
+        run: npm run build
+      
+      - name: Configure Firebase
+        run: |
+          echo "//welcome" > .firebaserc
+          echo '{"projects": {"default": "${{ env.FIREBASE_PROJECT }}"}}' > .firebaserc
+      
+      - name: Deploy to Firebase Hosting
+        run: npm run deploy
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
