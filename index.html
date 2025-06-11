@@ -1,286 +1,98 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { CSVLink } from "react-csv";
-import moment from "moment";
-import { debounce } from "lodash";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
-const ADMIN_UIDS = process.env.REACT_APP_ADMIN_UIDS?.split(",") || [];
-
-function AdminDashboard() {
-  // ... existing state declarations ...
-
-  // New state for additional functionality
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [userStats, setUserStats] = useState(null);
-  const [isBanning, setIsBanning] = useState(null);
-  const [showUserModal, setShowUserModal] = useState(false);
-  const [showMomentModal, setShowMomentModal] = useState(false);
-  const [selectedMoment, setSelectedMoment] = useState(null);
-
-  // ... existing code ...
-
-  // NEW FUNCTIONS:
-
-  // 1. User Management Functions
-  const handleBanUser = async (userId) => {
-    if (!window.confirm("Are you sure you want to ban this user?")) return;
-    setIsBanning(userId);
-    try {
-      const res = await fetch("http://localhost:5000/api/ban-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("User banned successfully!", { autoClose: 2000 });
-        fetchUsers(); // Refresh user list
-      } else {
-        toast.error(data.error || "Failed to ban user", { autoClose: 3000 });
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Admin Dashboard for Moments App"
+    />
+    <title>Moments Admin Dashboard</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Dark mode support -->
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                500: '#3b82f6',
+                600: '#2563eb',
+                700: '#1d4ed8',
+              },
+            },
+          },
+        },
       }
-    } catch (error) {
-      toast.error("Failed to ban user", { autoClose: 3000 });
-    } finally {
-      setIsBanning(null);
-    }
-  };
-
-  const handleUnbanUser = async (userId) => {
-    try {
-      const res = await fetch("http://localhost:5000/api/unban-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("User unbanned successfully!", { autoClose: 2000 });
-        fetchUsers();
-      } else {
-        toast.error(data.error || "Failed to unban user", { autoClose: 3000 });
+    </script>
+    <style>
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
-    } catch (error) {
-      toast.error("Failed to unban user", { autoClose: 3000 });
-    }
-  };
-
-  // 2. User Detail Functions
-  const fetchUserStats = async (userId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/user-stats/${userId}`);
-      const data = await res.json();
-      setUserStats(data);
-      setSelectedUser(users.find(u => u.id === userId));
-      setShowUserModal(true);
-    } catch (error) {
-      toast.error("Failed to fetch user stats", { autoClose: 3000 });
-    }
-  };
-
-  // 3. Moment Management Functions
-  const handleFeatureMoment = async (momentId) => {
-    try {
-      const res = await fetch("http://localhost:5000/api/feature-moment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ momentId }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Moment featured successfully!", { autoClose: 2000 });
-        fetchMoments();
-      } else {
-        toast.error(data.error || "Failed to feature moment", { autoClose: 3000 });
+      .animate-spin {
+        animation: spin 1s linear infinite;
       }
-    } catch (error) {
-      toast.error("Failed to feature moment", { autoClose: 3000 });
-    }
-  };
-
-  const handleViewMomentDetails = (moment) => {
-    setSelectedMoment(moment);
-    setShowMomentModal(true);
-  };
-
-  // 4. Bulk Actions
-  const handleBulkDelete = async (momentIds) => {
-    if (!window.confirm(`Are you sure you want to delete ${momentIds.length} moments?`)) return;
-    try {
-      const res = await fetch("http://localhost:5000/api/bulk-delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ momentIds }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success(`${momentIds.length} moments deleted successfully!`, { autoClose: 2000 });
-        fetchMoments();
-      } else {
-        toast.error(data.error || "Failed to delete moments", { autoClose: 3000 });
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
       }
-    } catch (error) {
-      toast.error("Failed to delete moments", { autoClose: 3000 });
-    }
-  };
-
-  // 5. Chat Functions
-  const openChatWithUser = (user) => {
-    // Implement your chat functionality here
-    // This could navigate to a chat page or open a chat modal
-    toast.info(`Chat with ${user.displayName || user.email} would open here`, {
-      autoClose: 2000,
-    });
-  };
-
-  // Update your JSX to include these new functions in the UI:
-
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* ... existing JSX ... */}
-
-      {/* Add these new UI elements */}
+    </style>
+  </head>
+  <body class="bg-gray-100 dark:bg-gray-900">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!-- React and React DOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- React Router -->
+    <script src="https://unpkg.com/react-router-dom@6/dist/react-router-dom.development.js"></script>
+    <!-- Additional required libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-toastify/9.1.1/react-toastify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-csv@2.2.2/dist/react-csv.min.js"></script>
+    <!-- Your compiled React code would be loaded here -->
+    <script src="/static/js/main.js"></script>
+    <script>
+      // Initialize environment variables
+      window.process = {
+        env: {
+          REACT_APP_ADMIN_UIDS: "your-admin-uids-here" // Replace with actual admin UIDs
+        }
+      };
       
-      {/* User Details Modal */}
-      {showUserModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">User Details</h3>
-              <button 
-                onClick={() => setShowUserModal(false)}
-                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                ✕
-              </button>
-            </div>
-            
-            {selectedUser && userStats && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-semibold">Basic Info</h4>
-                    <p>Name: {selectedUser.displayName || "Not provided"}</p>
-                    <p>Email: {selectedUser.email}</p>
-                    <p>Joined: {moment(selectedUser.metadata?.creationTime).format("LLL")}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Activity</h4>
-                    <p>Moments: {userStats.momentCount}</p>
-                    <p>Comments: {userStats.commentCount}</p>
-                    <p>Last Active: {moment(userStats.lastActive).fromNow()}</p>
-                  </div>
-                </div>
-                
-                <div className="flex space-x-2 pt-4">
-                  <button
-                    onClick={() => openChatWithUser(selectedUser)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                  >
-                    Send Message
-                  </button>
-                  {selectedUser.banned ? (
-                    <button
-                      onClick={() => handleUnbanUser(selectedUser.id)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-                    >
-                      Unban User
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleBanUser(selectedUser.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-                    >
-                      Ban User
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Moment Details Modal */}
-      {showMomentModal && selectedMoment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Moment Details</h3>
-              <button 
-                onClick={() => setShowMomentModal(false)}
-                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <p className="text-lg font-semibold">{selectedMoment.caption || "No caption"}</p>
-              
-              {selectedMoment.imageUrl && (
-                <img 
-                  src={selectedMoment.imageUrl} 
-                  alt="Moment" 
-                  className="max-h-96 w-full object-contain rounded"
-                />
-              )}
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold">Metadata</h4>
-                  <p>Posted: {moment(selectedMoment.timestamp).format("LLL")}</p>
-                  <p>Likes: {selectedMoment.likes?.length || 0}</p>
-                  <p>Comments: {selectedMoment.comments?.length || 0}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Actions</h4>
-                  <div className="flex flex-col space-y-2">
-                    <button
-                      onClick={() => handleFeatureMoment(selectedMoment.id)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm"
-                    >
-                      {selectedMoment.featured ? "Unfeature" : "Feature"} Moment
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(selectedMoment.imageUrl);
-                        toast.success("Image URL copied to clipboard");
-                      }}
-                      className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm"
-                    >
-                      Copy Image URL
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Update your existing tables to include the new functionality */}
-
-      {/* Users Table - add onClick to view details */}
-      <tr 
-        key={user.id}
-        className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-        onClick={() => fetchUserStats(user.id)}
-      >
-        {/* ... existing user table cells ... */}
-      </tr>
-
-      {/* Moments Table - add onClick to view details */}
-      <div
-        key={m.id}
-        className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-        onClick={() => handleViewMomentDetails(m)}
-      >
-        {/* ... existing moment content ... */}
-      </div>
-    </div>
-  );
-}
-
-export default AdminDashboard;
+      // Render the app
+      const { StrictMode } = React;
+      const { createRoot } = ReactDOM;
+      const { BrowserRouter } = ReactRouterDOM;
+      const root = createRoot(document.getElementById('root'));
+      
+      root.render(
+        <StrictMode>
+          <BrowserRouter>
+            <AdminDashboard />
+          </BrowserRouter>
+        </StrictMode>
+      );
+    </script>
+  </body>
+</html>
