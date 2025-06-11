@@ -148,7 +148,8 @@ def send_message():
         db.collection('chats').document(chat_id).collection('messages').add(message)
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        app.logger.error("An error occurred while sending a message: %s", e, exc_info=True)
+        return jsonify({"error": "An internal error occurred"}), 500
 
 if __name__ == '__main__':
     app.run(port=5000)
