@@ -24,7 +24,7 @@ def get_users():
         return jsonify(users)
     except Exception as e:
         print(e)  # Log error
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "An internal error has occurred."}), 500
 
 @app.route('/api/ban-user', methods=['POST'])
 def ban_user():
@@ -35,7 +35,8 @@ def ban_user():
         db.collection('users').document(user_id).update({'banned': True})
         return jsonify({"success": True, "message": "User banned."})
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        print(e)  # Log error
+        return jsonify({"success": False, "message": "An internal error has occurred."}), 500
 
 # --- MOMENTS ---
 
@@ -72,7 +73,8 @@ def delete_moment():
         db.collection('moments').document(moment_id).delete()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(e)  # Log error
+        return jsonify({"error": "An internal error has occurred."}), 500
 
 # --- STATISTICS ---
 
