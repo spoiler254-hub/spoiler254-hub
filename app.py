@@ -248,8 +248,8 @@ def get_chat(target_user_id):
             'adminUid': admin_uid # Pass adminUid back for message rendering logic
         })
     except Exception as e:
-        print(f"Error fetching chat: {e}")
-        return jsonify({'error': f'Failed to fetch chat: {e}'}), 500
+        print(f"Error fetching chat: {e}")  # Log the exception details on the server
+        return jsonify({'error': 'An internal error occurred while fetching the chat.'}), 500
 
 @app.route('/send_message/<chat_id>', methods=['POST'])
 def send_message(chat_id):
@@ -272,8 +272,8 @@ def send_message(chat_id):
         })
         return jsonify({'success': True, 'message': 'Message sent!'}), 200
     except Exception as e:
-        print(f"Error sending message: {e}")
-        return jsonify({'error': f'Failed to send message: {e}'}), 500
+        print(f"Error sending message: {e}")  # Log the exception details on the server
+        return jsonify({'error': 'An internal error occurred while sending the message.'}), 500
 
 
 if __name__ == '__main__':
