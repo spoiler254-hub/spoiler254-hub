@@ -4,11 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Admin Dashboard for Moments App"
-    />
-    <title>Admin Dashboard</title>
+    <meta name="description" content="Admin Dashboard for Moments App" />
+    <title>Moments Admin Dashboard</title>
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome for icons -->
@@ -60,39 +57,7 @@
   <body class="bg-gray-100 dark:bg-gray-900">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!-- React and React DOM -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- React Router -->
-    <script src="https://unpkg.com/react-router-dom@6/dist/react-router-dom.development.js"></script>
-    <!-- Additional required libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-toastify/9.1.1/react-toastify.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/react-csv@2.2.2/dist/react-csv.min.js"></script>
-    <!-- Your compiled React code would be loaded here -->
+    <!-- Your compiled React code bundle will be injected here by your build tool -->
     <script src="/static/js/main.js"></script>
-    <script>
-      // Initialize environment variables
-      window.process = {
-        env: {
-          REACT_APP_ADMIN_UIDS: "spoiler-hub" // Replace with actual admin UIDs
-        }
-      };
-      
-      // Render the app
-      const { StrictMode } = React;
-      const { createRoot } = ReactDOM;
-      const { BrowserRouter } = ReactRouterDOM;
-      const root = createRoot(document.getElementById('root'));
-      
-      root.render(
-        <StrictMode>
-          <BrowserRouter>
-            <AdminDashboard />
-          </BrowserRouter>
-        </StrictMode>
-      );
-    </script>
   </body>
 </html>
