@@ -277,5 +277,6 @@ def send_message(chat_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True) # Set debug=False in production
+    # Dynamically set debug mode based on the FLASK_ENV environment variable
+    app.run(debug=os.getenv('FLASK_ENV') == 'development')
               
