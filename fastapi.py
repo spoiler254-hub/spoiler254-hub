@@ -17,7 +17,9 @@ def get_moments():
         docs = db.collection('moments').stream()
         return jsonify([doc.to_dict() for doc in docs])
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import logging
+        logging.error("An error occurred: %s", e, exc_info=True)
+        return jsonify({'error': 'An internal error has occurred'}), 500
 
 @app.route('/api/delete-moment', methods=['POST'])
 def delete_moment():
@@ -26,4 +28,6 @@ def delete_moment():
         db.collection('moments').document(moment_id).delete()
         return jsonify({'success': True})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import logging
+        logging.error("An error occurred: %s", e, exc_info=True)
+        return jsonify({'error': 'An internal error has occurred'}), 500
