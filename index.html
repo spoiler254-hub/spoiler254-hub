@@ -23,6 +23,12 @@
       referrerpolicy="no-referrer"
     />
     
+    <!-- Moment.js for date formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    
+    <!-- React Toastify CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/react-toastify/8.1.0/react-toastify.min.css">
+    
     <!-- Dark mode support -->
     <script>
       tailwind.config = {
@@ -65,12 +71,43 @@
           transform: rotate(360deg);
         }
       }
+      
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+      
+      .dark ::-webkit-scrollbar-track {
+        background: #374151;
+      }
+      
+      .dark ::-webkit-scrollbar-thumb {
+        background: #6b7280;
+      }
+      
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+      }
     </style>
   </head>
   
   <body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
     <noscript>
-      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative m-4" role="alert">
         <strong class="font-bold">JavaScript is disabled!</strong>
         <span class="block sm:inline">You need to enable JavaScript to run this app.</span>
       </div>
@@ -78,7 +115,13 @@
     
     <div id="root"></div>
     
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
+    
     <!-- Your compiled React code bundle will be injected here by your build tool -->
-    <script src="/static/js/main.js" defer></script>
+    <script src="/static/js/bundle.js" defer></script>
   </body>
 </html>
